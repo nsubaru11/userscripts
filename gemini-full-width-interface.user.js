@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.4.0
+// @version      1.4.1
 // @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします。
 // @author       You
 // @license      MIT
@@ -12,8 +12,8 @@
 // @grant        GM_addStyle
 // @noframes
 // @icon         https://gemini.google.com/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/gemini-full-width-interface.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/gemini-full-width-interface.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/gemini-full-width-interface.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/gemini-full-width-interface.user.js
 // ==/UserScript==
 
 (function () {
