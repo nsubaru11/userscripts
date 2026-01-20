@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.5.0
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします（添付ファイル対応）。
+// @version      1.6.0
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします（余白調整版）。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -46,13 +46,17 @@
 
         /* --- ユーザー入力エリアの右寄せ・装飾 --- */
 
-        /* 1. コンテナ設定: 縦並びにして右端に寄せる */
-        /* これにより添付ファイルとテキストが縦に積み重なり、すべて右に寄ります */
+        /* 1. コンテナ設定: 縦並び・右寄せ・隙間詰め */
+        /* justify-content: flex-end ではなく normal/flex-start にして引き伸ばしを防止 */
         user-query-content .user-query-container,
         div[class*="user-query-container"] {
             display: flex !important;
-            flex-direction: column !important; /* 縦並びを強制 */
-            align-items: flex-end !important;  /* アイテムを右端に寄せる */
+            flex-direction: column !important;
+            align-items: flex-end !important;  /* 右端に寄せる */
+            justify-content: flex-start !important; /* 上下に引き伸ばさず詰める */
+            gap: 10px !important; /* ファイルとテキストの間隔を10pxに固定 */
+            height: auto !important; /* 高さを中身に合わせる */
+            min-height: 0 !important; /* 最小高さをリセット */
             width: 100% !important;
             margin-right: 0 !important;
         }
@@ -66,7 +70,6 @@
             display: inline-block !important;
             text-align: left !important;
             max-width: 80% !important;
-            /* Flexアイテムとしての配置調整 */
             margin-left: auto !important; 
             margin-right: 0 !important;
         }
@@ -77,21 +80,23 @@
             background-color: var(--gemini-user-bg) !important;
             border-radius: 12px !important;
             padding: 8px !important;
-            margin-bottom: 8px !important; /* テキストとの間隔 */
             width: fit-content !important;
             max-width: 80% !important;
-            margin-left: auto !important; /* 右寄せ */
+            
+            /* 配置とマージンリセット */
+            margin: 0 !important; 
+            margin-left: auto !important; 
             margin-right: 0 !important;
         }
 
         /* 4. ボタン類（編集・コピー）の位置調整 */
-        /* テキストの左側にボタンが来るように設定 */
         .query-content {
             display: flex !important;
             flex-direction: row !important;
             justify-content: flex-end !important;
             align-items: center !important;
             width: 100% !important;
+            margin: 0 !important; /* 余計なマージンを削除 */
         }
 
         /* 内部テキストの余白調整 */
@@ -131,5 +136,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v1.5.0 - Right Align & File Style).");
+	console.log("Gemini Full-Width Script Applied (v1.6.0 - Compact Gap).");
 })();
