@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.6.0
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします（余白調整版）。
+// @version      1.7.0
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします（最小構成版）。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -20,9 +20,9 @@
 	'use strict';
 
 	const config = {
-		width: '95%',           // 全体の幅
-		maxWidth: 'none',       // 最大幅制限
-		userBgColor: '#d0ebff'  // 背景色: 少し濃いめの青
+		width: '95%',
+		maxWidth: 'none',
+		userBgColor: '#d0ebff'
 	};
 
 	const fullWidthCss = `
@@ -32,7 +32,7 @@
             --gemini-user-bg: ${config.userBgColor};
         }
 
-        /* --- メインレイアウト（全体幅拡張） --- */
+        /* --- 1. 画面幅の拡張 --- */
         .conversation-container,
         infinite-scroller,
         .infinite-scroller,
@@ -44,69 +44,41 @@
             margin: 0 auto !important;
         }
 
-        /* --- ユーザー入力エリアの右寄せ・装飾 --- */
-
-        /* 1. コンテナ設定: 縦並び・右寄せ・隙間詰め */
-        /* justify-content: flex-end ではなく normal/flex-start にして引き伸ばしを防止 */
-        user-query-content .user-query-container,
-        div[class*="user-query-container"] {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-end !important;  /* 右端に寄せる */
-            justify-content: flex-start !important; /* 上下に引き伸ばさず詰める */
-            gap: 10px !important; /* ファイルとテキストの間隔を10pxに固定 */
-            height: auto !important; /* 高さを中身に合わせる */
-            min-height: 0 !important; /* 最小高さをリセット */
-            width: 100% !important;
-            margin-right: 0 !important;
-        }
-
-        /* 2. テキスト吹き出しの装飾 */
+        /* --- 2. ユーザー入力の右寄せ --- */
+        /* コンテナの並び順（Flex/Block）や余白（Gap）はいじらず、
+           中身（テキスト・ファイル）のマージン左側を自動にして右へ押しやる */
+        
+        /* テキストの吹き出し */
         .user-query-bubble-with-background,
         span[class*="user-query-bubble-with-background"] {
+            margin-left: auto !important; 
+            margin-right: 0 !important;
+            
+            /* 装飾 */
             background-color: var(--gemini-user-bg) !important;
             color: #0b1c33 !important;
             border-radius: 12px !important;
-            display: inline-block !important;
             text-align: left !important;
             max-width: 80% !important;
-            margin-left: auto !important; 
-            margin-right: 0 !important;
+            display: inline-block !important; /* 幅を中身に合わせる */
         }
 
-        /* 3. 添付ファイルプレビューの装飾 */
+        /* 添付ファイルエリア */
         .file-preview-container,
         user-query-file-carousel {
+            margin-left: auto !important;
+            margin-right: 0 !important;
+
+            /* 装飾 */
             background-color: var(--gemini-user-bg) !important;
             border-radius: 12px !important;
             padding: 8px !important;
             width: fit-content !important;
             max-width: 80% !important;
-            
-            /* 配置とマージンリセット */
-            margin: 0 !important; 
-            margin-left: auto !important; 
-            margin-right: 0 !important;
         }
 
-        /* 4. ボタン類（編集・コピー）の位置調整 */
-        .query-content {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            width: 100% !important;
-            margin: 0 !important; /* 余計なマージンを削除 */
-        }
-
-        /* 内部テキストの余白調整 */
-        .query-text-line {
-            padding: 8px 12px !important;
-            background-color: transparent !important;
-            margin: 0 !important;
-        }
-
-        /* --- 入力エリア（フッター） --- */
+        /* --- 3. その他調整 --- */
+        /* 入力エリア（フッター）の幅合わせ */
         footer,
         .input-area,
         .bottom-container,
@@ -116,14 +88,20 @@
              margin: 0 auto !important;
         }
 
-        /* --- その他メッセージエリア --- */
-        div[class*="message-content"],
-        div[class*="text-container"],
-        app-model-content {
-            max-width: 100% !important;
+        /* テキスト内部の余白調整 */
+        .query-text-line {
+            padding: 8px 12px !important;
+            background-color: transparent !important;
+            margin: 0 !important;
         }
+        
+        /* 編集・コピーボタン群も右へ */
+        .query-content {
+            justify-content: flex-end !important;
+        }
+
+        /* コードブロックの折り返し */
         pre {
-            max-width: 100% !important;
             white-space: pre-wrap !important;
         }
     `;
@@ -136,5 +114,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v1.6.0 - Compact Gap).");
+	console.log("Gemini Full-Width Script Applied (v1.7.0 - Minimalist).");
 })();
