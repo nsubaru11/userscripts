@@ -1,12 +1,19 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
-// @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Geminiのチャット画面と入力欄を画面幅いっぱいに広げます (Windows 11 / Chrome & Edge対応)
-// @author       Gemini User
+// @namespace    https://github.com/nsubaru11/userscripts
+// @version      1.0.0
+// @description  Geminiのチャット画面と入力欄を画面幅いっぱいに広げます。
+// @author       You
+// @license      MIT
+// @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
+// @supportURL   https://github.com/nsubaru11/userscripts/issues
 // @match        https://gemini.google.com/*
+// @run-at       document-idle
 // @grant        GM_addStyle
-// @run-at       document-end
+// @noframes
+// @icon         https://gemini.google.com/favicon.ico
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/gemini-full-width-interface.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/gemini-full-width-interface.user.js
 // ==/UserScript==
 
 (function() {
