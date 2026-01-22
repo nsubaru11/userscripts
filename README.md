@@ -10,11 +10,11 @@ Gemini の UI を最適化し、チャット画面の幅を広げます。
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/gemini-full-width-interface.user.js)**
 
-### Moodle Wakayama Univ Auto-Login
+### Wakayama University Moodle Auto-Login
 
 和歌山大学の Moodle および Microsoft 365 ログインページで自動ログインを試みます。
 
-- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/moodle-autologin.user.js)**
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-autologin.user.js)**
 
 ### Paiza Language Selector
 

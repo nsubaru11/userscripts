@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Moodle Wakayama Univ Auto-Login
+// @name         Wakayama University Moodle Auto-Login
 // @namespace    https://github.com/nsubaru11/userscripts
 // @version      1.0.0
 // @description  和歌山大学の moodle に自動でログインを行います。
@@ -12,8 +12,8 @@
 // @run-at       document-start
 // @grant        none
 // @noframes
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/moodle-autologin.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/moodle-autologin.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-autologin.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-autologin.user.js
 // ==/UserScript==
 
 (function () {
