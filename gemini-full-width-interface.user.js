@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.9.0
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せ・濃い青背景にします（配置・描画修正版）。
+// @version      2.0.0
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。背景色のオンオフと色の変更が可能です。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -10,6 +10,9 @@
 // @match        https://gemini.google.com/*
 // @run-at       document-idle
 // @grant        GM_addStyle
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
 // @noframes
 // @icon         https://gemini.google.com/favicon.ico
 // @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/gemini-full-width-interface.user.js
@@ -19,17 +22,36 @@
 (function () {
 	'use strict';
 
+	// 設定の読み込み（保存されていない場合はデフォルト値を使用）
 	const config = {
 		width: '95%',
 		maxWidth: 'none',
-		userBgColor: '#d0ebff'
+		useBgColor: GM_getValue('useBgColor', true),
+		userBgColor: GM_getValue('userBgColor', '#d0ebff')
 	};
+
+	// メニューコマンドの登録
+	GM_registerMenuCommand(config.useBgColor ? "背景色を無効にする" : "背景色を有効にする", () => {
+		GM_setValue('useBgColor', !config.useBgColor);
+		location.reload();
+	});
+
+	GM_registerMenuCommand("背景色を変更する", () => {
+		const newColor = prompt("背景色のカラーコードを入力してください（例: #d0ebff, #ffe0e0）", config.userBgColor);
+		if (newColor !== null) {
+			GM_setValue('userBgColor', newColor);
+			location.reload();
+		}
+	});
+
+	// 背景色が有効な場合のみ色を適用、無効な場合は透明にする
+	const appliedBgColor = config.useBgColor ? config.userBgColor : 'transparent';
 
 	const fullWidthCss = `
         :root {
             --gemini-chat-width: ${config.width};
             --gemini-chat-max-width: ${config.maxWidth};
-            --gemini-user-bg: ${config.userBgColor};
+            --gemini-user-bg: ${appliedBgColor};
         }
 
         /* --- 1. 画面幅の拡張 --- */
@@ -100,7 +122,7 @@
             display: inline-block !important;
             
             /* Flexアイテムとしての右寄せ */
-            margin-left: auto !important; 
+            margin-left: auto !important;
             margin-right: 0 !important;
         }
 
@@ -142,5 +164,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v1.9.0 - Layout Fixes).");
+	console.log("Gemini Full-Width Script Applied (v2.0.0).");
 })();
