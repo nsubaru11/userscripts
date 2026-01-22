@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.1.0
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。
+// @version      2.1.1
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。文字の視認性を向上させました。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -137,7 +137,8 @@
         }
 
         /* --- 4. テキスト吹き出しの装飾 --- */
-        [class*="user-query-bubble"] {
+        [class*="user-query-bubble"],
+        [class*="user-query-bubble"] [class*="query-text-line"] {
             background-color: var(--gemini-user-bg) !important;
             color: var(--gemini-user-text) !important;
             border-radius: 12px !important;
@@ -150,19 +151,19 @@
             margin-right: 0 !important;
         }
 
+        /* 内部のテキスト行の背景を透明にし、色を確実に継承させる */
+        [class*="user-query-bubble"] [class*="query-text-line"] {
+            background-color: transparent !important;
+            max-width: 100% !important;
+            padding: 8px 12px !important;
+        }
+
         /* --- 5. 編集・コピーボタン等の調整 --- */
         [class*="query-content"] {
             display: flex !important;
             width: 100% !important;
             justify-content: flex-end !important; /* 右寄せ */
             margin-top: 4px !important;
-        }
-
-        /* テキスト内部の余白 */
-        [class*="query-text-line"] {
-            padding: 8px 12px !important;
-            background-color: transparent !important;
-            margin: 0 !important;
         }
 
         /* --- 6. 入力エリア（フッター） --- */
@@ -188,5 +189,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v2.1.0).");
+	console.log("Gemini Full-Width Script Applied (v2.1.1).");
 })();
