@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.1.1
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。文字の視認性を向上させました。
+// @version      2.1.2
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。Gemini自身のテーマ設定を優先します。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -71,12 +71,16 @@
             --gemini-user-text: #0b1c33;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                /* ダークモード時、背景色が透明でないかつデフォルト色（ライトブルー）の場合は調整 */
-                --gemini-user-bg: ${config.useBgColor && config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : appliedBgColor};
-                --gemini-user-text: #e3e3e3;
-            }
+        /* ダークモード設定の優先（OS設定よりもGemini自体の設定を優先） */
+        body[data-theme="dark"] {
+            --gemini-user-bg: ${config.useBgColor && config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : appliedBgColor};
+            --gemini-user-text: #e3e3e3;
+        }
+
+        /* ライトモード設定の明示 */
+        body[data-theme="light"] {
+            --gemini-user-bg: ${appliedBgColor};
+            --gemini-user-text: #0b1c33;
         }
 
         /* --- 1. 画面幅の拡張 --- */
@@ -189,5 +193,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v2.1.1).");
+	console.log("Gemini Full-Width Script Applied (v2.1.2).");
 })();
