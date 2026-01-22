@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.2.0
+// @version      2.2.1
 // @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。形を崩さず、幅や背景色のカスタマイズ、ダークモードに対応しています。Gemini自身のテーマ設定を優先します。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
 // @supportURL   https://github.com/nsubaru11/userscripts/issues
 // @match        https://gemini.google.com/*
-// @run-at       document-idle
+// @run-at       document-start
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -175,8 +175,8 @@
 	} else {
 		const style = document.createElement('style');
 		style.textContent = fullWidthCss;
-		document.head.appendChild(style);
+		(document.head || document.documentElement).appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v2.2.0).");
+	console.log("Gemini Full-Width Script Applied (v2.2.1).");
 })();
