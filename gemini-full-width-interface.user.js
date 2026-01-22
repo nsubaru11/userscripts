@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.1.2
+// @version      2.1.3
 // @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。Gemini自身のテーマ設定を優先します。
 // @author       You
 // @license      MIT
@@ -26,20 +26,21 @@
 	const config = {
 		width: GM_getValue('width', '95%'),
 		maxWidth: GM_getValue('maxWidth', '1200px'),
-		useBgColor: GM_getValue('useBgColor', true),
+		useBgColor: GM_getValue('useBgColor', false),
 		userBgColor: GM_getValue('userBgColor', '#d0ebff')
 	};
 
 	// メニューコマンドの登録
-	GM_registerMenuCommand(config.useBgColor ? "背景色を無効にする" : "背景色を有効にする", () => {
+	GM_registerMenuCommand(config.useBgColor ? "カスタム背景色を無効にする（デフォルトに戻す）" : "カスタム背景色を有効にする", () => {
 		GM_setValue('useBgColor', !config.useBgColor);
 		location.reload();
 	});
 
-	GM_registerMenuCommand("背景色を変更する", () => {
+	GM_registerMenuCommand("カスタム背景色を変更する", () => {
 		const newColor = prompt("背景色のカラーコードを入力してください（例: #d0ebff, rgba(208, 235, 255, 0.5)）", config.userBgColor);
 		if (newColor !== null) {
 			GM_setValue('userBgColor', newColor);
+			GM_setValue('useBgColor', true); // 色を変更したら有効にする
 			location.reload();
 		}
 	});
@@ -60,28 +61,42 @@
 		}
 	});
 
-	// 背景色が有効な場合のみ色を適用、無効な場合は透明にする
-	const appliedBgColor = config.useBgColor ? config.userBgColor : 'transparent';
+	// カスタム背景色が有効な場合のスタイル定義
+	const colorOverrides = config.useBgColor ? `
+        :root {
+            --gemini-user-bg: ${config.userBgColor};
+            --gemini-user-text: #0b1c33;
+        }
+
+        /* ダークモード設定（カスタム色がデフォルトのままなら半透明にする） */
+        body[data-theme="dark"] {
+            --gemini-user-bg: ${config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : config.userBgColor};
+            --gemini-user-text: #e3e3e3;
+        }
+
+        /* ライトモード設定 */
+        body[data-theme="light"] {
+            --gemini-user-bg: ${config.userBgColor};
+            --gemini-user-text: #0b1c33;
+        }
+
+        /* 実際に色を適用するセレクタ */
+        [class*="new-file-preview-container"],
+        user-query-file-preview [class*="file-preview-container"],
+        [class*="preview-image-button"],
+        [class*="user-query-bubble"] {
+            background-color: var(--gemini-user-bg) !important;
+            color: var(--gemini-user-text) !important;
+        }
+    ` : '';
 
 	const fullWidthCss = `
         :root {
             --gemini-chat-width: ${config.width};
             --gemini-chat-max-width: ${config.maxWidth};
-            --gemini-user-bg: ${appliedBgColor};
-            --gemini-user-text: #0b1c33;
         }
 
-        /* ダークモード設定の優先（OS設定よりもGemini自体の設定を優先） */
-        body[data-theme="dark"] {
-            --gemini-user-bg: ${config.useBgColor && config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : appliedBgColor};
-            --gemini-user-text: #e3e3e3;
-        }
-
-        /* ライトモード設定の明示 */
-        body[data-theme="light"] {
-            --gemini-user-bg: ${appliedBgColor};
-            --gemini-user-text: #0b1c33;
-        }
+        ${colorOverrides}
 
         /* --- 1. 画面幅の拡張 --- */
         [class*="conversation-container"],
@@ -129,11 +144,10 @@
             align-self: flex-end !important; /* 右寄せ */
         }
 
-        /* 実際にファイルがある場合の中身（チップ）だけに色を付ける */
+        /* 実際にファイルがある場合の中身（チップ） */
         [class*="new-file-preview-container"],
         user-query-file-preview [class*="file-preview-container"],
         [class*="preview-image-button"] {
-            background-color: var(--gemini-user-bg) !important;
             border-radius: 12px !important;
             padding: 8px !important;
             margin-bottom: 8px !important; /* テキストとの間隔 */
@@ -141,10 +155,7 @@
         }
 
         /* --- 4. テキスト吹き出しの装飾 --- */
-        [class*="user-query-bubble"],
-        [class*="user-query-bubble"] [class*="query-text-line"] {
-            background-color: var(--gemini-user-bg) !important;
-            color: var(--gemini-user-text) !important;
+        [class*="user-query-bubble"] {
             border-radius: 12px !important;
             text-align: left !important;
             max-width: 80% !important;
@@ -155,9 +166,10 @@
             margin-right: 0 !important;
         }
 
-        /* 内部のテキスト行の背景を透明にし、色を確実に継承させる */
+        /* 内部のテキスト行の調整 */
         [class*="user-query-bubble"] [class*="query-text-line"] {
             background-color: transparent !important;
+            color: inherit !important; /* 親の吹き出しの色を継承 */
             max-width: 100% !important;
             padding: 8px 12px !important;
         }
@@ -193,5 +205,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v2.1.2).");
+	console.log("Gemini Full-Width Script Applied (v2.1.3).");
 })();
