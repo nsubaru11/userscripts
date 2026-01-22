@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.1.3
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。幅や背景色のカスタマイズ、ダークモードに対応しています。Gemini自身のテーマ設定を優先します。
+// @version      2.2.0
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。形を崩さず、幅や背景色のカスタマイズ、ダークモードに対応しています。Gemini自身のテーマ設定を優先します。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -80,13 +80,18 @@
             --gemini-user-text: #0b1c33;
         }
 
-        /* 実際に色を適用するセレクタ */
+        /* 実際に色だけを適用するセレクタ（形状には干渉しない） */
+        [class*="user-query-bubble"],
         [class*="new-file-preview-container"],
         user-query-file-preview [class*="file-preview-container"],
-        [class*="preview-image-button"],
-        [class*="user-query-bubble"] {
+        [class*="preview-image-button"] {
             background-color: var(--gemini-user-bg) !important;
             color: var(--gemini-user-text) !important;
+        }
+
+        /* 内部テキストの色を継承させる */
+        [class*="user-query-bubble"] [class*="query-text-line"] {
+            color: inherit !important;
         }
     ` : '';
 
@@ -110,79 +115,47 @@
             margin: 0 auto !important;
         }
 
-        /* --- 2. ユーザー入力エリアのレイアウト（右寄せ固定） --- */
+        /* --- 2. ユーザー入力エリアのレイアウト（右寄せ） --- */
         
-        /* 親要素の幅を強制的に100%にする（ここが狭いと中央に寄って見える） */
+        /* コンテナをFlexboxにして右寄せを実現 */
         user-query,
         user-query-content,
         [class*="user-query-container"] {
-            display: block !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        /* 実際のコンテンツを含むコンテナをFlex化し、右端(flex-end)に寄せる */
-        user-query-content > div[class*="user-query-container"] {
             display: flex !important;
             flex-direction: column !important;
-            align-items: flex-end !important; /* これで子要素全てが右端へ */
+            align-items: flex-end !important;
             width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            max-width: 100% !important;
         }
 
-        /* --- 3. 添付ファイルエリアの修正 --- */
-        /* コンテナ自体は透明・余白なしにする（ファイルが無い時に消えるように） */
-        [class*="file-preview-container"],
+        /* 添付ファイルエリアの右寄せ */
         user-query-file-carousel {
-            background: none !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            align-self: flex-end !important;
             width: auto !important;
             max-width: 100% !important;
-            align-self: flex-end !important; /* 右寄せ */
         }
 
-        /* 実際にファイルがある場合の中身（チップ） */
-        [class*="new-file-preview-container"],
-        user-query-file-preview [class*="file-preview-container"],
-        [class*="preview-image-button"] {
-            border-radius: 12px !important;
-            padding: 8px !important;
-            margin-bottom: 8px !important; /* テキストとの間隔 */
-            display: inline-block !important;
-        }
-
-        /* --- 4. テキスト吹き出しの装飾 --- */
+        /* ユーザーの吹き出し自体のレイアウト調整（形状は変えない） */
         [class*="user-query-bubble"] {
-            border-radius: 12px !important;
-            text-align: left !important;
-            max-width: 80% !important;
-            display: inline-block !important;
-            
-            /* Flexアイテムとしての右寄せ */
+            max-width: 85% !important;
             margin-left: auto !important;
             margin-right: 0 !important;
         }
 
-        /* 内部のテキスト行の調整 */
+        /* 内部のテキスト行の調整（背景色を消してバブルの色を見せる） */
         [class*="user-query-bubble"] [class*="query-text-line"] {
             background-color: transparent !important;
-            color: inherit !important; /* 親の吹き出しの色を継承 */
-            max-width: 100% !important;
-            padding: 8px 12px !important;
         }
 
-        /* --- 5. 編集・コピーボタン等の調整 --- */
+        /* --- 3. 編集・コピーボタン等の調整 --- */
         [class*="query-content"] {
             display: flex !important;
             width: 100% !important;
-            justify-content: flex-end !important; /* 右寄せ */
+            justify-content: flex-end !important;
             margin-top: 4px !important;
         }
 
-        /* --- 6. 入力エリア（フッター） --- */
+        /* --- 4. 入力エリア（フッター） --- */
         footer,
         [class*="input-area"],
         [class*="bottom-container"],
@@ -205,5 +178,5 @@
 		document.head.appendChild(style);
 	}
 
-	console.log("Gemini Full-Width Script Applied (v2.1.3).");
+	console.log("Gemini Full-Width Script Applied (v2.2.0).");
 })();
