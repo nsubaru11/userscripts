@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      2.3.0
-// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。形を崩さず、幅や背景色のカスタマイズ、ダークモードに対応しています。Googleの標準CSSに負けない詳細度と、最速の適用速度を備えています。
+// @version      2.4.0
+// @description  Geminiのチャット画面を広げ、ユーザー入力を右寄せにします。形を崩さず、幅や背景色のカスタマイズ、ダークモードに対応しています。入力欄の崩れ防止や編集モードの保護機能を備えています。
 // @author       You
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -94,6 +94,19 @@
             max-width: 100% !important;
         }
 
+        /* 編集モードの保護: フォームが含まれる場合は左寄せ・幅100%に戻す */
+        :root body user-query:has(form),
+        :root body user-query-content:has(form),
+        :root body [class*="user-query-container"]:has(form) {
+            align-items: flex-start !important;
+        }
+
+        :root body user-query form,
+        :root body [class*="user-query-container"] form {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
         /* 添付ファイルエリアの右寄せ */
         :root body user-query-file-carousel {
             align-self: flex-end !important;
@@ -123,12 +136,17 @@
 
         /* --- 4. 入力エリア（フッター） --- */
         :root body footer,
-        :root body [class*="input-area"],
-        :root body [class*="bottom-container"],
-        :root body div[role="contentinfo"] > div {
+        :root body [class*="bottom-container"] {
              width: var(--gemini-chat-width) !important;
              max-width: var(--gemini-chat-max-width) !important;
              margin: 0 auto !important;
+        }
+
+        /* 内部要素の幅は100%を維持し、並び（Flexbox）を壊さない */
+        :root body [class*="input-area"],
+        :root body div[role="contentinfo"] > div {
+             width: 100% !important;
+             max-width: 100% !important;
         }
 
         :root body pre {
@@ -172,5 +190,5 @@
 		}
 	});
 
-	console.log("Gemini Full-Width Script Applied (v2.3.0).");
+	console.log("Gemini Full-Width Script Applied (v2.4.0).");
 })();
