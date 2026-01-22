@@ -12,8 +12,8 @@
 // @run-at       document-start
 // @grant        none
 // @noframes
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/moodle-autologin.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/moodle-autologin.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/moodle-autologin.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/moodle-autologin.user.js
 // ==/UserScript==
 
 (function () {

@@ -16,8 +16,8 @@
 // @grant        GM_listValues
 // @noframes
 // @icon         https://paiza.jp/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/paiza-language-selector.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/paiza-language-selector.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/paiza-language-selector.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/paiza-language-selector.user.js
 // ==/UserScript==
 
 (function () {

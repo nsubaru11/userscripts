@@ -14,8 +14,8 @@
 // @grant        GM_registerMenuCommand
 // @noframes
 // @icon         https://gemini.google.com/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/gemini-full-width-interface.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/gemini-full-width-interface.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/gemini-full-width-interface.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/gemini-full-width-interface.user.js
 // ==/UserScript==
 
 (function () {
