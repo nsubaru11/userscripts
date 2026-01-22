@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.0.0
+// @version      3.1.0
 // @description  GeminiのUIを最適化します。入力欄の保護、編集モード対応、FOUC対策（アニメーション表示）、SPA遷移対策を完備した安定版です。
 // @author       You
 // @license      MIT
@@ -43,10 +43,7 @@
             --gemini-user-bg: ${config.userBgColor};
             --gemini-user-text: #0b1c33;
         }
-        :root body [class*="user-query-bubble"],
-        :root body [class*="new-file-preview-container"],
-        :root body user-query-file-preview [class*="file-preview-container"],
-        :root body [class*="preview-image-button"] {
+        :root body [class*="user-query-bubble"] {
             background-color: var(--gemini-user-bg) !important;
             color: var(--gemini-user-text) !important;
         }
@@ -212,5 +209,5 @@
 		}
 	});
 
-	console.log("Gemini Full-Width v3.0.0: Stabilized.");
+	console.log("Gemini Full-Width v3.1.0: Stabilized.");
 })();
