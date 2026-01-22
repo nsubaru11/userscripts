@@ -3,7 +3,7 @@
 // @namespace    https://github.com/nsubaru11/userscripts
 // @version      3.1.0
 // @description  GeminiのUIを最適化します。入力欄の保護、編集モード対応、FOUC対策（アニメーション表示）、SPA遷移対策を完備した安定版です。
-// @author       You
+// @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
 // @supportURL   https://github.com/nsubaru11/userscripts/issues
