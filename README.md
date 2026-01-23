@@ -10,6 +10,12 @@ Gemini の UI を最適化し、チャット画面の幅を広げます。
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/gemini-full-width-interface.user.js)**
 
+### Enhanced CampusSquare Syllabus
+
+CampusSquare のシラバス検索画面に週間カレンダーを表示し、検索を効率化します。
+
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/enhanced-campus-square-syllabus.user.js)**
+
 ### Wakayama University Moodle Auto-Login
 
 和歌山大学の Moodle および Microsoft 365 ログインページで自動ログインを試みます。
