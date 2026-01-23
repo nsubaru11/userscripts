@@ -22,6 +22,11 @@
 	const CALENDAR_ID = 'my-custom-filter-cal';
 	const HIGHLIGHT_CLASS = 'my-custom-filter-cal-active';
 
+	function isSyllabusTabActive() {
+		const tab = document.querySelector('#tab-sb');
+		return !!(tab && tab.classList.contains('tabcell-sel'));
+	}
+
 	// =========================================================================
 	// 1. 大型カレンダー生成 (マージン追加)
 	// =========================================================================
@@ -207,6 +212,7 @@
 	// 3. レイアウト制御 (左は無視、右だけ置換、中央拡大)
 	// =========================================================================
 	function updateLayout() {
+		if (!isSyllabusTabActive()) return;
 		const allTds = document.querySelectorAll('td');
 
 		allTds.forEach(td => {
@@ -245,6 +251,7 @@
 	// 4. iframe高さ調整 & 幅制限解除
 	// =========================================================================
 	function adjustIframe() {
+		if (!isSyllabusTabActive()) return;
 		// 幅固定の解除
 		const tabs = document.getElementById('tabs');
 		if (tabs) tabs.setAttribute('style', 'padding: 5px; width: 100% !important; box-sizing: border-box;');
@@ -269,6 +276,7 @@
 	// メインループ
 	// =========================================================================
 	function main() {
+		if (!isSyllabusTabActive()) return;
 		updateLayout();
 		adjustIframe();
 	}
