@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.2.0
-// @description  GeminiのUIを最適化。送信直後のレイアウト崩れを防ぎ、ボタンをテキストの下に固定します。
+// @version      3.3.0
+// @description  GeminiのUIを最適化。編集モード時の入力欄を、全称セレクタを用いて強制的に最大化します。
 // @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -58,15 +58,9 @@
             --gemini-chat-max-width: ${config.maxWidth};
         }
 
-        /* 読み込み時の位置ズレ（FOUC）を隠すアニメーション */
-        @keyframes gemini-slide-in {
-            0% { opacity: 0; transform: translateX(10px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
         ${colorOverrides}
 
-        /* レイアウト: 画面幅の拡張 */
+        /* --- 幅の拡張 --- */
         :root body [class*="conversation-container"],
         :root body infinite-scroller,
         :root body [class*="infinite-scroller"],
@@ -78,7 +72,7 @@
             margin: 0 auto !important;
         }
 
-        /* ユーザー入力コンテナ全体: 縦並び・右寄せ */
+        /* --- ユーザー入力エリア: 通常時は右寄せ・縦並び --- */
         :root body user-query,
         :root body user-query-content,
         :root body [class*="user-query-container"] {
@@ -87,135 +81,154 @@
             align-items: flex-end !important;
             width: 100% !important;
             max-width: 100% !important;
-            animation: gemini-slide-in 0.25s ease-out forwards !important;
         }
 
-        /* 編集モード対応: フォーム表示時は左寄せに戻しアニメーションを無効化 */
+        /* --- 【修正】編集モード (超強力版) --- */
+
+        /* 1. コンテナのFlex設定を「左寄せ・全幅」へ強制リセット */
+        :root body user-query:has(textarea),
+        :root body user-query-content:has(textarea),
+        :root body [class*="user-query-container"]:has(textarea),
         :root body user-query:has(form),
-        :root body user-query-content:has(form),
-        :root body [class*="user-query-container"]:has(form) {
-            align-items: flex-start !important;
-            animation: none !important;
-        }
-
-        :root body user-query form,
-        :root body [class*="user-query-container"] form {
+        :root body user-query-content:has(form) {
+            align-items: stretch !important; /* 幅いっぱいに伸ばす */
             width: 100% !important;
             max-width: 100% !important;
         }
 
-        /* 添付ファイルエリアの調整 */
+        /* 2. フォーム内の「すべての要素」を強制的に幅100%にする (総当たり) */
+        :root body user-query form *,
+        :root body [class*="user-query-container"] form * {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 3. ただし、アイコンやボタンなどの小さな要素がつぶれないように例外設定 */
+        :root body user-query form mat-icon,
+        :root body user-query form button,
+        :root body user-query form .mat-mdc-button-touch-target,
+        :root body user-query form .mat-mdc-focus-indicator {
+            width: auto !important;
+            max-width: none !important;
+        }
+
+        /* 4. フォーム自体の配置補正 */
+        :root body user-query form {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* 5. テキストエリアの高さ確保とリサイズ許可 */
+        :root body textarea.mat-mdc-input-element {
+            min-height: 60px !important;
+            resize: vertical !important;
+        }
+
+
+        /* --- 添付ファイル (最上部) --- */
         :root body user-query-file-carousel {
             align-self: flex-end !important;
             width: auto !important;
             max-width: 100% !important;
-            order: 0 !important; /* 最上部に配置 */
+            order: 0 !important;
         }
 
-        /* ユーザー吹き出し: 形状を維持したまま右寄せ */
+        /* --- テキストバブル (2番目) --- */
         :root body [class*="user-query-bubble"] {
+            display: block !important;
             max-width: 85% !important;
             margin-left: auto !important;
             margin-right: 0 !important;
-
-            /* 【重要】表示順序の強制 */
+            margin-bottom: 0 !important;
             order: 1 !important;
         }
-
-        /* 既定の左パディングを打ち消して余白を除去 */
-        :root body [class*="user-query-container"] [class*="query-content"] {
-            padding-left: 0 !important;
-            padding-inline-start: 0 !important;
-        }
-
-        /* 吹き出し内テキストの背景透過設定 */
         :root body [class*="user-query-bubble"] [class*="query-text-line"] {
             background-color: transparent !important;
         }
 
-        /* --- JS生成要素のスタイル --- */
-
-        /* 1. query-content自体を縦並び（Column）にする */
-        :root body [class*="query-content"]:has([class*="user-query-bubble"]) {
-            display: flex !important;
-            flex-direction: column !important; /* テキストの下にボタンエリアを積む */
-            align-items: flex-end !important;  /* 右端揃え */
-            gap: 4px !important;
-            width: 100% !important;            /* 幅を確保 */
-            max-width: 100% !important;
-            min-width: 0 !important;
-        }
-
-        /* 2. JSでまとめたボタンエリア (.gemini-user-actions) */
+        /* --- ボタンエリア (JSで生成・最下部) --- */
         :root body .gemini-user-actions {
-            display: inline-flex !important;   /* ボタン同士は横並び */
-            gap: 6px !important;
+            display: inline-flex !important;
+            gap: 4px !important;
             align-items: center !important;
             justify-content: flex-end !important;
             margin-right: 0 !important;
+            margin-top: 2px !important;
             opacity: 0.8;
-
-            /* 【重要】必ずバブルの下に来るように順序を強制 */
-            order: 2 !important;
-            margin-top: 4px !important;
+            order: 2 !important; /* バブルの下 */
         }
-
-        /* ホバー時のみ少し強調（任意） */
         :root body .gemini-user-actions:hover {
             opacity: 1;
         }
 
-        /* 処理前のボタンが変な位置に出ないようにする */
-        :root body user-query-content > div:not(.gemini-user-actions):not([class*="user-query-bubble"]):has(button) {
-            /* JSが移動させるまで一時的に見えなくする（ちらつき防止） */
-            opacity: 0;
-            pointer-events: none;
+        /* コンテナの隙間調整 */
+        :root body [class*="query-content"]:has([class*="user-query-bubble"]) {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            gap: 2px !important;
+            width: 100% !important;
+            min-width: 0 !important;
         }
 
-        /* フッター（入力エリア）の外枠幅を制限 */
+        /* ボタンのスタイル調整 */
+        :root body .gemini-user-actions > div {
+            margin: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+        }
+        :root body .gemini-user-actions button {
+            margin: 0 !important;
+            padding: 4px !important;
+            width: 32px !important;
+            height: 32px !important;
+        }
+        :root body .gemini-user-actions button mat-icon,
+        :root body .gemini-user-actions button span[class*="icon"] {
+            font-size: 18px !important;
+            width: 18px !important;
+            height: 18px !important;
+            line-height: 18px !important;
+        }
+
+        /* フッター */
         :root body footer,
         :root body [class*="bottom-container"] {
              width: var(--gemini-chat-width) !important;
              max-width: var(--gemini-chat-max-width) !important;
              margin: 0 auto !important;
         }
-
-        /* 入力ボックス自体の幅を維持（崩れ防止） */
         :root body [class*="input-area"],
         :root body div[role="contentinfo"] > div {
              width: 100% !important;
              max-width: 100% !important;
         }
-
         :root body pre {
             white-space: pre-wrap !important;
         }
     `;
 
-	// --- 3. DOM操作と監視 (DOM Restructuring) ---
+	// --- 3. DOM操作 ---
 	const styleId = 'gemini-full-width-style';
 	const actionsClass = 'gemini-user-actions';
-	const queryContentSelector = 'user-query-content [class*="query-content"]';
-	const bubbleSelector = ':scope > [class*="user-query-bubble"]';
-	const buttonWrapperSelector = ':scope > div';
 	let normalizePending = false;
 
-	// ボタン要素を適切なコンテナに移動させる関数
 	function normalizeUserQueryActions() {
 		if (!document.body) return;
 
-		const queryContents = document.querySelectorAll(queryContentSelector);
+		const queryContents = document.querySelectorAll('user-query-content [class*="query-content"]');
 		queryContents.forEach((queryContent) => {
-			// 編集モード中は操作しない
-			if (queryContent.querySelector('form')) return;
+			// 編集モード中は操作しない（安全策）
+			if (queryContent.querySelector('form') || queryContent.querySelector('textarea')) return;
 
-			const bubble = queryContent.querySelector(bubbleSelector);
+			const bubble = queryContent.querySelector(':scope > [class*="user-query-bubble"]');
 			if (!bubble) return;
 
-			// まだ移動されていないボタンのラッパーのみを取得
-			const buttonWrappers = Array.from(queryContent.querySelectorAll(buttonWrapperSelector))
+			// ボタンを含む要素を探索
+			const buttonWrappers = Array.from(queryContent.querySelectorAll(':scope > div'))
 				.filter((wrapper) => {
-					// 既に作成したコンテナ自身や、バブル本体は除外
 					return wrapper.querySelector('button') &&
 						!wrapper.classList.contains(actionsClass) &&
 						!wrapper.className.includes('user-query-bubble');
@@ -223,26 +236,23 @@
 
 			if (buttonWrappers.length === 0) return;
 
-			// コンテナの取得または作成
 			let actions = queryContent.querySelector(`:scope > .${actionsClass}`);
 			if (!actions) {
 				actions = document.createElement('div');
 				actions.className = actionsClass;
 			}
 
-			// ボタンラッパーをコンテナに移動
 			buttonWrappers.forEach((wrapper) => {
-				// opacity0で見えなくしていたのを戻す
+				// 安全のためスタイルをリセットして移動
 				wrapper.style.opacity = '1';
 				wrapper.style.pointerEvents = 'auto';
+				wrapper.style.display = 'flex';
 				actions.appendChild(wrapper);
 			});
 
-			// コンテナをDOM内の適切な位置に配置
 			if (actions.parentElement !== queryContent) {
 				queryContent.appendChild(actions);
 			}
-			// バブルの直後に配置 (orderを使っているが念のためDOM順序も整える)
 			if (actions.previousSibling !== bubble) {
 				bubble.insertAdjacentElement('afterend', actions);
 			}
@@ -279,7 +289,7 @@
 
 	observer.observe(document.documentElement, {childList: true, subtree: true});
 
-	// --- 4. メニューコマンド ---
+	// --- 4. メニュー ---
 	GM_registerMenuCommand(config.useBgColor ? "カスタム背景色をOFF" : "カスタム背景色をON", () => {
 		GM_setValue('useBgColor', !config.useBgColor);
 		location.reload();
@@ -310,5 +320,5 @@
 		}
 	});
 
-	console.log("Gemini Full-Width v3.2.0: Layout stabilized with JS grouping.");
+	console.log("Gemini Full-Width v3.3.0: Force full-width edit form.");
 })();
