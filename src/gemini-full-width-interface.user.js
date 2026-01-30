@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.1.1
-// @description  GeminiのUIを最適化します。
+// @version      3.2.0
+// @description  GeminiのUIを最適化。送信直後のレイアウト崩れを防ぎ、ボタンをテキストの下に固定します。
 // @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -78,7 +78,7 @@
             margin: 0 auto !important;
         }
 
-        /* ユーザー入力: 右寄せと表示アニメーションの適用 */
+        /* ユーザー入力コンテナ全体: 縦並び・右寄せ */
         :root body user-query,
         :root body user-query-content,
         :root body [class*="user-query-container"] {
@@ -109,6 +109,7 @@
             align-self: flex-end !important;
             width: auto !important;
             max-width: 100% !important;
+            order: 0 !important; /* 最上部に配置 */
         }
 
         /* ユーザー吹き出し: 形状を維持したまま右寄せ */
@@ -116,6 +117,15 @@
             max-width: 85% !important;
             margin-left: auto !important;
             margin-right: 0 !important;
+
+            /* 【重要】表示順序の強制 */
+            order: 1 !important;
+        }
+
+        /* 既定の左パディングを打ち消して余白を除去 */
+        :root body [class*="user-query-container"] [class*="query-content"] {
+            padding-left: 0 !important;
+            padding-inline-start: 0 !important;
         }
 
         /* 吹き出し内テキストの背景透過設定 */
@@ -123,12 +133,43 @@
             background-color: transparent !important;
         }
 
-        /* 操作ボタン（編集・コピー等）の右寄せ */
-        :root body [class*="query-content"] {
+        /* --- JS生成要素のスタイル --- */
+
+        /* 1. query-content自体を縦並び（Column）にする */
+        :root body [class*="query-content"]:has([class*="user-query-bubble"]) {
             display: flex !important;
-            width: 100% !important;
+            flex-direction: column !important; /* テキストの下にボタンエリアを積む */
+            align-items: flex-end !important;  /* 右端揃え */
+            gap: 4px !important;
+            width: 100% !important;            /* 幅を確保 */
+            max-width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        /* 2. JSでまとめたボタンエリア (.gemini-user-actions) */
+        :root body .gemini-user-actions {
+            display: inline-flex !important;   /* ボタン同士は横並び */
+            gap: 6px !important;
+            align-items: center !important;
             justify-content: flex-end !important;
+            margin-right: 0 !important;
+            opacity: 0.8;
+
+            /* 【重要】必ずバブルの下に来るように順序を強制 */
+            order: 2 !important;
             margin-top: 4px !important;
+        }
+
+        /* ホバー時のみ少し強調（任意） */
+        :root body .gemini-user-actions:hover {
+            opacity: 1;
+        }
+
+        /* 処理前のボタンが変な位置に出ないようにする */
+        :root body user-query-content > div:not(.gemini-user-actions):not([class*="user-query-bubble"]):has(button) {
+            /* JSが移動させるまで一時的に見えなくする（ちらつき防止） */
+            opacity: 0;
+            pointer-events: none;
         }
 
         /* フッター（入力エリア）の外枠幅を制限 */
@@ -151,27 +192,89 @@
         }
     `;
 
-	// --- 3. スタイル注入と監視 ---
+	// --- 3. DOM操作と監視 (DOM Restructuring) ---
 	const styleId = 'gemini-full-width-style';
+	const actionsClass = 'gemini-user-actions';
+	const queryContentSelector = 'user-query-content [class*="query-content"]';
+	const bubbleSelector = ':scope > [class*="user-query-bubble"]';
+	const buttonWrapperSelector = ':scope > div';
+	let normalizePending = false;
+
+	// ボタン要素を適切なコンテナに移動させる関数
+	function normalizeUserQueryActions() {
+		if (!document.body) return;
+
+		const queryContents = document.querySelectorAll(queryContentSelector);
+		queryContents.forEach((queryContent) => {
+			// 編集モード中は操作しない
+			if (queryContent.querySelector('form')) return;
+
+			const bubble = queryContent.querySelector(bubbleSelector);
+			if (!bubble) return;
+
+			// まだ移動されていないボタンのラッパーのみを取得
+			const buttonWrappers = Array.from(queryContent.querySelectorAll(buttonWrapperSelector))
+				.filter((wrapper) => {
+					// 既に作成したコンテナ自身や、バブル本体は除外
+					return wrapper.querySelector('button') &&
+						!wrapper.classList.contains(actionsClass) &&
+						!wrapper.className.includes('user-query-bubble');
+				});
+
+			if (buttonWrappers.length === 0) return;
+
+			// コンテナの取得または作成
+			let actions = queryContent.querySelector(`:scope > .${actionsClass}`);
+			if (!actions) {
+				actions = document.createElement('div');
+				actions.className = actionsClass;
+			}
+
+			// ボタンラッパーをコンテナに移動
+			buttonWrappers.forEach((wrapper) => {
+				// opacity0で見えなくしていたのを戻す
+				wrapper.style.opacity = '1';
+				wrapper.style.pointerEvents = 'auto';
+				actions.appendChild(wrapper);
+			});
+
+			// コンテナをDOM内の適切な位置に配置
+			if (actions.parentElement !== queryContent) {
+				queryContent.appendChild(actions);
+			}
+			// バブルの直後に配置 (orderを使っているが念のためDOM順序も整える)
+			if (actions.previousSibling !== bubble) {
+				bubble.insertAdjacentElement('afterend', actions);
+			}
+		});
+	}
+
+	function scheduleNormalize() {
+		if (normalizePending) return;
+		normalizePending = true;
+		requestAnimationFrame(() => {
+			normalizePending = false;
+			normalizeUserQueryActions();
+		});
+	}
 
 	function injectStyle() {
 		if (document.getElementById(styleId)) return;
-
 		const style = document.createElement('style');
 		style.id = styleId;
 		style.textContent = layoutCss;
-
-		// headまたはdocumentElementにスタイルを注入（document-start対応）
 		(document.head || document.documentElement).appendChild(style);
 		console.log('Gemini Full-Width: Style Injected');
 	}
 
-	// 初回注入の実行
+	// 初回実行
 	injectStyle();
+	scheduleNormalize();
 
-	// SPA遷移やDOM更新によるスタイル削除を監視して再注入
+	// 監視設定
 	const observer = new MutationObserver(() => {
 		if (!document.getElementById(styleId)) injectStyle();
+		scheduleNormalize();
 	});
 
 	observer.observe(document.documentElement, {childList: true, subtree: true});
@@ -207,5 +310,5 @@
 		}
 	});
 
-	console.log("Gemini Full-Width v3.1.0: Stabilized.");
+	console.log("Gemini Full-Width v3.2.0: Layout stabilized with JS grouping.");
 })();
