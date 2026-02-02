@@ -1,14 +1,13 @@
 // ==UserScript==
 // @name         Wakayama University Moodle Mark as Read
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.0.0
+// @version      1.0.1
 // @description  和歌山大学の moodle で未読の通知を全て既読にします。
 // @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
 // @supportURL   https://github.com/nsubaru11/userscripts/issues
 // @include      /^https:\/\/moodle.*\.wakayama-u\.ac\.jp\/.*$/
-// @match        https://login.microsoftonline.com/*
 // @run-at       document-start
 // @grant        none
 // @noframes
@@ -19,8 +18,10 @@
 (function () {
 	'use strict';
 
+	const BTN_ID = 'mark-all-read-btn';
+	const STYLE_ID = 'moodle-fix-style';
 	const btnStyle = `
-        #mark-all-read-btn {
+        #${BTN_ID} {
             background: linear-gradient(to bottom, #ffffff, #f1f3f5) !important;
             color: #201799 !important;
             border: 1px solid #adb5bd !important;
@@ -36,7 +37,7 @@
             cursor: pointer !important;
             transition: all 0.2s ease !important;
         }
-        #mark-all-read-btn:hover {
+        #${BTN_ID}:hover {
             background: #ffffff !important;
             border-color: #201799 !important;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
@@ -45,20 +46,33 @@
     `;
 
 	const injectStyle = () => {
-		if (!document.getElementById('moodle-fix-style')) {
+		if (document.getElementById(STYLE_ID)) return true;
+		if (!document.head) return false;
+		if (!document.getElementById(STYLE_ID)) {
 			const style = document.createElement('style');
-			style.id = 'moodle-fix-style';
-			style.innerHTML = btnStyle;
+			style.id = STYLE_ID;
+			style.textContent = btnStyle;
 			document.head.appendChild(style);
 		}
+		return true;
 	};
 
+	let isMarking = false;
 	const markAllAsRead = async (e) => {
 		e.preventDefault();
-		const btn = document.getElementById('mark-all-read-btn');
+		if (isMarking) return;
+		const btn = document.getElementById(BTN_ID);
+		if (!btn) return;
+		const cfg = window.M?.cfg;
+		if (!cfg?.userId || !cfg?.sesskey || !cfg?.wwwroot) {
+			btn.textContent = '❌ 失敗（情報不足）';
+			return;
+		}
 
-		btn.innerText = '⌛ 処理中...';
+		isMarking = true;
+		btn.textContent = '⌛ 処理中...';
 		btn.style.opacity = '0.6';
+		btn.style.pointerEvents = 'none';
 
 		try {
 			// MoodleのWebサービスAPIを呼び出す
@@ -67,11 +81,11 @@
 				index: 0,
 				methodname: 'core_message_mark_all_notifications_as_read',
 				args: {
-					useridto: M.cfg.userId
+					useridto: cfg.userId
 				}
 			}];
 
-			const response = await fetch(`${M.cfg.wwwroot}/lib/ajax/service.php?sesskey=${M.cfg.sesskey}`, {
+			const response = await fetch(`${cfg.wwwroot}/lib/ajax/service.php?sesskey=${cfg.sesskey}`, {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify(payload)
@@ -87,32 +101,34 @@
 				const badge = document.querySelector('[data-region="count-container"]');
 				if (badge) badge.classList.add('d-none');
 
-				btn.innerText = '✅ 完了しました';
+				btn.textContent = '✅ 完了しました';
 				console.log("Moodle: All notifications marked as read via API.");
 			} else {
 				throw new Error("API Response Error");
 			}
 		} catch (err) {
 			console.error('一括既読化に失敗しました:', err);
-			btn.innerText = '❌ 失敗（再試行）';
-			btn.style.opacity = '1';
+			btn.textContent = '❌ 失敗（再試行）';
 		} finally {
 			setTimeout(() => {
-				btn.innerText = '✅ すべて既読';
+				btn.textContent = '✅ すべて既読';
 				btn.style.opacity = '1';
+				btn.style.pointerEvents = '';
+				isMarking = false;
 			}, 2000);
 		}
 	};
 
 	const addReadButton = () => {
 		const actions = document.querySelector('.popover-region-header-actions');
-		if (actions && !document.getElementById('mark-all-read-btn')) {
-			injectStyle();
+		if (actions && !document.getElementById(BTN_ID)) {
+			if (!injectStyle()) return;
 			const btn = document.createElement('a');
-			btn.id = 'mark-all-read-btn';
+			btn.id = BTN_ID;
 			btn.href = '#';
-			btn.innerText = '✅ すべて既読';
-			btn.onclick = markAllAsRead;
+			btn.textContent = '✅ すべて既読';
+			btn.setAttribute('role', 'button');
+			btn.addEventListener('click', markAllAsRead);
 			actions.prepend(btn);
 		}
 	};
