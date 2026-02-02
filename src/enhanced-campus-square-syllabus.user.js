@@ -12,8 +12,8 @@
 // @grant        GM_addStyle
 // @noframes
 // @icon         https://kmags.wakayama-u.ac.jp/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/enhansed-campus-square-syllabus.user.js
-// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/enhansed-campus-square-syllabus.user.js
+// @updateURL    https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/enhanced-campus-square-syllabus.user.js
+// @downloadURL  https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/enhanced-campus-square-syllabus.user.js
 // ==/UserScript==
 
 (function () {
