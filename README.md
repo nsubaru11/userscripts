@@ -34,6 +34,12 @@ paiza のコード提出ページで、あらかじめ設定したプログラ�
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-mark-as-read.user.js)**
 
+### Wakayama University Moodle My Course Dropdown
+
+和歌山大学の Moodle でマイコースのドロップダウンメニューを拡張します。
+
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-mycourse-dropdown.user.js)**
+
 ## 使い方
 
 1. Tampermonkey をインストールします。
