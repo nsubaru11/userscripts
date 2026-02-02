@@ -28,6 +28,12 @@ paiza のコード提出ページで、あらかじめ設定したプログラ�
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/paiza-language-selector.user.js)**
 
+### Wakayama University Moodle Mark as Read
+
+和歌山大学の Moodle で未読の通知を全て既読にします。
+
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-mark-as-read.user.js)**
+
 ## 使い方
 
 1. Tampermonkey をインストールします。
