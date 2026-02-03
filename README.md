@@ -10,6 +10,12 @@ Gemini の UI を最適化し、チャット画面の幅を広げます。
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/gemini-full-width-interface.user.js)**
 
+### ChatGPT Full-Width Interface
+
+ChatGPT の UI を最適化し、チャット画面の幅を広げます。
+
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/chatgpt-full-width-interface.user.js)**
+
 ### Enhanced CampusSquare Syllabus
 
 CampusSquare のシラバス検索画面に週間カレンダーを表示し、検索を効率化します。
@@ -39,6 +45,12 @@ paiza のコード提出ページで、あらかじめ設定したプログラ�
 和歌山大学の Moodle でマイコースのドロップダウンメニューを拡張します。
 
 - **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-mycourse-dropdown.user.js)**
+
+### Wakayama University Moodle Download Manager
+
+和歌山大学の Moodle でファイルの一括ダウンロード機能を拡張します。
+
+- **[インストール](https://raw.githubusercontent.com/nsubaru11/userscripts/main/src/wakayama-u-moodle-download-manager.user.js)**
 
 ## 使い方
 
