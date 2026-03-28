@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.3.0
+// @version      3.3.1
 // @description  GeminiのUIを最適化。編集モード時の入力欄を、全称セレクタを用いて強制的に最大化します。
 // @author       nsubaru11
 // @license      MIT
@@ -83,7 +83,7 @@
             max-width: 100% !important;
         }
 
-        /* --- 【修正】編集モード (超強力版) --- */
+        /* --- 編集モード --- */
 
         /* 1. コンテナのFlex設定を「左寄せ・全幅」へ強制リセット */
         :root body user-query:has(textarea),
@@ -96,7 +96,7 @@
             max-width: 100% !important;
         }
 
-        /* 2. フォーム内の「すべての要素」を強制的に幅100%にする (総当たり) */
+        /* 2. フォーム内の「すべての要素」を強制的に幅100%にする */
         :root body user-query form *,
         :root body [class*="user-query-container"] form * {
             width: 100% !important;
@@ -125,7 +125,6 @@
             min-height: 60px !important;
             resize: vertical !important;
         }
-
 
         /* --- 添付ファイル (最上部) --- */
         :root body user-query-file-carousel {
@@ -191,6 +190,43 @@
             width: 18px !important;
             height: 18px !important;
             line-height: 18px !important;
+        }
+
+        /* --- モデル回答内のテーブル表示最適化 --- */
+        :root body .horizontal-scroll-wrapper,
+        :root body .table-block-component,
+        :root body table-block,
+        :root body .table-block,
+        :root body .table-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            display: block !important;
+        }
+
+        :root body model-response table,
+        :root body model-response table,
+        :root body [class*="model-response"] table,
+        :root body .model-response-text table {
+            width: 100% !important;
+            table-layout: auto !important;
+        }
+
+        :root body model-response th,
+        :root body model-response td,
+        :root body [class*="model-response"] th,
+        :root body [class*="model-response"] td,
+        :root body .model-response-text th,
+        :root body .model-response-text td {
+            min-width: 150px !important;
+            word-break: normal !important;
+            vertical-align: top !important;
+        }
+
+        :root body model-response [class*="table-wrapper"],
+        :root body [class*="model-response"] [class*="table-container"],
+        :root body .model-response-text [class*="table-wrapper"] {
+            overflow-x: auto !important;
+            max-width: 100% !important;
         }
 
         /* フッター */
