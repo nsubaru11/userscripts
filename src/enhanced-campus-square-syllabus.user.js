@@ -213,9 +213,11 @@
 	// =========================================================================
 	function updateLayout() {
 		if (!isSyllabusTabActive()) return;
+		if (document.getElementById(CALENDAR_ID)) return;
+
 		const allTds = document.querySelectorAll('td');
 
-		allTds.forEach(td => {
+		for (const td of allTds) {
 			const text = td.innerText || "";
 
 			// ■ 右カラムの特定と置換
@@ -224,18 +226,18 @@
 				&& !text.includes("MYスケジュール")
 				&& td.offsetWidth < window.innerWidth * 0.4) {
 
-				// まだカレンダーになっていなければ置換実行
-				if (!td.querySelector(`#${CALENDAR_ID}`)) {
-					td.innerHTML = ''; // 中身を消去
-					td.appendChild(createBigCalendar());
+				td.innerHTML = ''; // 中身を消去
+				td.appendChild(createBigCalendar());
 
-					// 右カラムの幅設定
-					td.style.display = 'table-cell';
-					td.style.width = '320px';
-					td.style.minWidth = '320px';
-					td.style.verticalAlign = 'top';
-					td.style.backgroundColor = '#fff';
-				}
+				// カラムの幅設定
+				td.style.display = 'table-cell';
+				td.style.width = '320px';
+				td.style.minWidth = '320px';
+				td.style.verticalAlign = 'top';
+				td.style.backgroundColor = '#fff';
+
+				// 💡 修正案: 目的の箇所を1つ置換したら、それ以上他の td を書き換えないようにループを抜ける
+				break;
 			}
 
 			// ■ 中央カラム（シラバス）の拡大
@@ -244,7 +246,7 @@
 				// 自動幅調整に任せる
 				// td.style.width = 'auto';
 			}
-		});
+		}
 	}
 
 	// =========================================================================
@@ -282,6 +284,7 @@
 	}
 
 	let scheduled = false;
+
 	function scheduleMain() {
 		if (scheduled) return;
 		scheduled = true;
