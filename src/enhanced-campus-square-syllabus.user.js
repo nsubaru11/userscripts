@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Enhanced CampusSquare Syllabus
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.1.0
+// @version      1.1.1
 // @description  検索に便利な週間カレンダーを表示します。
 // @author       nsubaru11
 // @license      MIT
