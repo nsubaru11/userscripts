@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.0.0
+// @version      1.2.0
 // @description  ChatGPTのUIを最適化。チャットエリアの横幅を広げます。
 // @author       nsubaru11
 // @license      MIT
@@ -30,47 +30,68 @@
 	// --- 2. CSS定義 ---
 	// ChatGPTは --thread-content-max-width CSS変数で幅を制御している
 	// デフォルト: 40rem, 大画面(@w-lg/main): 48rem
-	const layoutCss = `
-        /* --- 幅の拡張 --- */
-        /* スレッドコンテンツの最大幅を上書き */
-        main [class*="thread-content-max-width"],
-        main .mx-auto[class*="max-w-"] {
-            --thread-content-max-width: ${config.maxWidth} !important;
-            max-width: ${config.maxWidth} !important;
-        }
+	const layoutCss = /* language=CSS */ `
+		/* =========================
+		   中央寄せ（コンテンツのみ）
+		   ========================= */
+		main [class*="thread-content-max-width"],
+		main article > div,
+		main [class*="group/turn-messages"] {
+			margin-left: auto !important;
+			margin-right: auto !important;
+		}
 
-        /* 会話ターンのコンテナ */
-        main article > div,
-        main article .mx-auto {
-            --thread-content-max-width: ${config.maxWidth} !important;
-            max-width: ${config.maxWidth} !important;
-        }
+		/* =========================
+		   幅の拡張（コンテンツのみ）
+		   ========================= */
+		main [class*="thread-content-max-width"],
+		main .mx-auto[class*="max-w-"] {
+			--thread-content-max-width: ${config.maxWidth} !important;
+			max-width: ${config.maxWidth} !important;
+		}
 
-        /* group/turn-messages コンテナ */
-        main [class*="group/turn-messages"] {
-            --thread-content-max-width: ${config.maxWidth} !important;
-            max-width: ${config.maxWidth} !important;
-        }
+		main article > div,
+		main article .mx-auto {
+			--thread-content-max-width: ${config.maxWidth} !important;
+			max-width: ${config.maxWidth} !important;
+		}
 
-        /* 入力エリア（コンポーザー） */
-        main [class*="composer"],
-        main form[class*="mx-auto"],
-        main .mb-4.mx-auto {
-            --thread-content-max-width: ${config.maxWidth} !important;
-            max-width: ${config.maxWidth} !important;
-        }
+		main [class*="group/turn-messages"] {
+			--thread-content-max-width: ${config.maxWidth} !important;
+			max-width: ${config.maxWidth} !important;
+		}
 
-        /* Tailwind の max-w クラスを直接上書き */
-        main .max-w-\\(--thread-content-max-width\\),
-        main [class*="max-w-(--thread-content-max-width)"] {
-            max-width: ${config.maxWidth} !important;
-        }
+		/* Tailwindの変数ベースmax-width上書き */
+		main .max-w-\\(--thread-content-max-width\\),
+		main [class*="max-w-(--thread-content-max-width)"] {
+			max-width: ${config.maxWidth} !important;
+		}
 
-        /* コードブロックの折り返し */
-        pre {
-            white-space: pre-wrap !important;
-        }
-    `;
+		/* =========================
+		   入力欄（安全制御）
+		   ========================= */
+
+		/* コンテナのみ中央寄せ（幅は触らない） */
+		/* 入力欄コンテナの幅制御 */
+		main form {
+			width: clamp(640px, 90vw, 1200px) !important;
+			margin-left: auto !important;
+			margin-right: auto !important;
+		}
+
+		/* 念のため内部も追従 */
+		main form textarea {
+			width: 100% !important;
+			text-align: left !important;
+		}
+
+		/* =========================
+		   コードブロック
+		   ========================= */
+		pre {
+			white-space: pre-wrap !important;
+		}
+	`;
 
 	// --- 3. DOM操作 ---
 	const styleId = 'chatgpt-full-width-style';
