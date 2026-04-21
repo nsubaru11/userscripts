@@ -93,19 +93,23 @@
 		}
 
 		/* =========================
-		   テーブルの幅拡張（アップデート対応）
+		   テーブルの幅拡張（修正版）
 		   ========================= */
+		/* 1. テーブル自体の不自然なサイズ固定を解除 */
 		main table,
 		main table[class*="min-w-"] {
-			--thread-content-width: ${config.maxWidth} !important;
 			width: max-content !important;
-			min-width: 100% !important;
+			min-width: auto !important;
+			max-width: none !important;
 		}
 
+		/* 2. コンテナの幅をテーブルに合わせつつ、あふれたらスクロールさせる */
+		main [class*="tableContainer"],
+		main [class*="tableWrapper"],
 		main div:has(> table) {
-			width: 100% !important;
-			max-width: ${config.maxWidth} !important;
-			margin-left: auto !important;
+			width: fit-content !important;
+			max-width: 100% !important;
+			margin-left: 0 !important;
 			margin-right: auto !important;
 			overflow-x: auto !important;
 		}
