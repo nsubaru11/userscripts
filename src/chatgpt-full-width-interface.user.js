@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.2.4
+// @version      1.2.5
 // @description  ChatGPTのUIを最適化。チャットエリアの横幅を広げます。
 // @author       nsubaru11
 // @license      MIT
@@ -102,8 +102,7 @@
 			min-width: 100% !important;
 		}
 
-		main [class*="tableContainer"],
-		main [class*="tableWrapper"] {
+		main div:has(> table) {
 			width: 100% !important;
 			max-width: ${config.maxWidth} !important;
 			margin-left: auto !important;
