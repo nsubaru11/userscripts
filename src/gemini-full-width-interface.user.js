@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.3.1
+// @version      3.4.0
 // @description  GeminiのUIを最適化。編集モード時の入力欄を、全称セレクタを用いて強制的に最大化します。
 // @author       nsubaru11
 // @license      MIT
@@ -30,221 +30,222 @@
 	};
 
 	// --- 2. CSS定義 ---
-	const colorOverrides = config.useBgColor ? `
-        :root body {
-            --gemini-user-bg: ${config.userBgColor};
-            --gemini-user-text: #0b1c33;
-        }
-        :root body[data-theme="dark"] {
-            --gemini-user-bg: ${config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : config.userBgColor};
-            --gemini-user-text: #e3e3e3;
-        }
-        :root body[data-theme="light"] {
-            --gemini-user-bg: ${config.userBgColor};
-            --gemini-user-text: #0b1c33;
-        }
-        :root body [class*="user-query-bubble"] {
-            background-color: var(--gemini-user-bg) !important;
-            color: var(--gemini-user-text) !important;
-        }
-        :root body [class*="user-query-bubble"] [class*="query-text-line"] {
-            color: inherit !important;
-        }
-    ` : '';
+	const colorOverrides = config.useBgColor ? /* language=CSS */ `
+		:root body {
+			--gemini-user-bg: ${config.userBgColor};
+			--gemini-user-text: #0b1c33;
+		}
 
-	const layoutCss = `
-        :root {
-            --gemini-chat-width: ${config.width};
-            --gemini-chat-max-width: ${config.maxWidth};
-        }
+		:root body[data-theme="dark"] {
+			--gemini-user-bg: ${config.userBgColor === '#d0ebff' ? 'rgba(208, 235, 255, 0.2)' : config.userBgColor};
+			--gemini-user-text: #e3e3e3;
+		}
 
-        ${colorOverrides}
+		:root body[data-theme="light"] {
+			--gemini-user-bg: ${config.userBgColor};
+			--gemini-user-text: #0b1c33;
+		}
 
-        /* --- 幅の拡張 --- */
-        :root body [class*="conversation-container"],
-        :root body infinite-scroller,
-        :root body [class*="infinite-scroller"],
-        :root body main [class*="user-content"],
-        :root body main [class*="model-content"],
-        :root body main [class*="input-area-container"] {
-            width: var(--gemini-chat-width) !important;
-            max-width: var(--gemini-chat-max-width) !important;
-            margin: 0 auto !important;
-        }
+		:root body [class*="user-query-bubble"] {
+			background-color: var(--gemini-user-bg) !important;
+			color: var(--gemini-user-text) !important;
+		}
 
-        /* --- ユーザー入力エリア: 通常時は右寄せ・縦並び --- */
-        :root body user-query,
-        :root body user-query-content,
-        :root body [class*="user-query-container"] {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-end !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
+		:root body [class*="user-query-bubble"] [class*="query-text-line"] {
+			color: inherit !important;
+		}
+	` : '';
 
-        /* --- 編集モード --- */
+	const layoutCss = /* language=CSS */ `
+		:root {
+			--gemini-chat-width: ${config.width};
+			--gemini-chat-max-width: ${config.maxWidth};
+		}
 
-        /* 1. コンテナのFlex設定を「左寄せ・全幅」へ強制リセット */
-        :root body user-query:has(textarea),
-        :root body user-query-content:has(textarea),
-        :root body [class*="user-query-container"]:has(textarea),
-        :root body user-query:has(form),
-        :root body user-query-content:has(form) {
-            align-items: stretch !important; /* 幅いっぱいに伸ばす */
-            width: 100% !important;
-            max-width: 100% !important;
-        }
+		${colorOverrides} 
+		/* --- 幅の拡張（全体・チャット履歴） --- */
+		:root body [class*="conversation-container"],
+		:root body infinite-scroller,
+		:root body [class*="infinite-scroller"],
+		:root body main [class*="user-content"],
+		:root body main [class*="model-content"] {
+			width: var(--gemini-chat-width) !important;
+			max-width: var(--gemini-chat-max-width) !important;
+			margin: 0 auto !important;
+		}
 
-        /* 2. フォーム内の「すべての要素」を強制的に幅100%にする */
-        :root body user-query form *,
-        :root body [class*="user-query-container"] form * {
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
+		/* --- 入力エリアの全幅化と親コンテナの制限解除（新UI対応） --- */
+		/* 1. 入力エリアを囲む「親コンテナ」の制限を解除 */
+		:root body [class*="bottom-container"],
+		:root body div[role="contentinfo"],
+		:root body .input-area-container,
+			/* 2. 入力エリアの要素そのもの */
+		:root body input-area-v2,
+		:root body input-area-v2 > div,
+		:root body div.input-area {
+			width: 100% !important;
+			max-width: var(--gemini-chat-max-width) !important;
+			/* ネイティブの縦並び（マージン/パディング）を保護しつつ左右中央寄せ */
+			margin-left: auto !important;
+			margin-right: auto !important;
+			align-self: center !important;
+			justify-self: center !important;
+		}
 
-        /* 3. ただし、アイコンやボタンなどの小さな要素がつぶれないように例外設定 */
-        :root body user-query form mat-icon,
-        :root body user-query form button,
-        :root body user-query form .mat-mdc-button-touch-target,
-        :root body user-query form .mat-mdc-focus-indicator {
-            width: auto !important;
-            max-width: none !important;
-        }
+		/* --- 編集モード --- */
 
-        /* 4. フォーム自体の配置補正 */
-        :root body user-query form {
-            display: block !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+		/* 1. コンテナのFlex設定を「左寄せ・全幅」へ強制リセット */
+		:root body user-query:has(textarea),
+		:root body user-query-content:has(textarea),
+		:root body [class*="user-query-container"]:has(textarea),
+		:root body user-query:has(form),
+		:root body user-query-content:has(form) {
+			align-items: stretch !important; /* 幅いっぱいに伸ばす */
+			width: 100% !important;
+			max-width: 100% !important;
+		}
 
-        /* 5. テキストエリアの高さ確保とリサイズ許可 */
-        :root body textarea.mat-mdc-input-element {
-            min-height: 60px !important;
-            resize: vertical !important;
-        }
+		/* 2. フォーム内の「すべての要素」を強制的に幅100%にする */
+		:root body user-query form *,
+		:root body [class*="user-query-container"] form * {
+			width: 100% !important;
+			max-width: 100% !important;
+			box-sizing: border-box !important;
+		}
 
-        /* --- 添付ファイル (最上部) --- */
-        :root body user-query-file-carousel {
-            align-self: flex-end !important;
-            width: auto !important;
-            max-width: 100% !important;
-            order: 0 !important;
-        }
+		/* 3. ただし、アイコンやボタンなどの小さな要素がつぶれないように例外設定 */
+		:root body user-query form mat-icon,
+		:root body user-query form button,
+		:root body user-query form .mat-mdc-button-touch-target,
+		:root body user-query form .mat-mdc-focus-indicator {
+			width: auto !important;
+			max-width: none !important;
+		}
 
-        /* --- テキストバブル (2番目) --- */
-        :root body [class*="user-query-bubble"] {
-            display: block !important;
-            max-width: 85% !important;
-            margin-left: auto !important;
-            margin-right: 0 !important;
-            margin-bottom: 0 !important;
-            order: 1 !important;
-        }
-        :root body [class*="user-query-bubble"] [class*="query-text-line"] {
-            background-color: transparent !important;
-        }
+		/* 4. フォーム自体の配置補正 */
+		:root body user-query form {
+			display: block !important;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
 
-        /* --- ボタンエリア (JSで生成・最下部) --- */
-        :root body .gemini-user-actions {
-            display: inline-flex !important;
-            gap: 4px !important;
-            align-items: center !important;
-            justify-content: flex-end !important;
-            margin-right: 0 !important;
-            margin-top: 2px !important;
-            opacity: 0.8;
-            order: 2 !important; /* バブルの下 */
-        }
-        :root body .gemini-user-actions:hover {
-            opacity: 1;
-        }
+		/* 5. テキストエリアの高さ確保とリサイズ許可 */
+		:root body textarea.mat-mdc-input-element {
+			min-height: 60px !important;
+			resize: vertical !important;
+		}
 
-        /* コンテナの隙間調整 */
-        :root body [class*="query-content"]:has([class*="user-query-bubble"]) {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-end !important;
-            gap: 2px !important;
-            width: 100% !important;
-            min-width: 0 !important;
-        }
+		/* --- 添付ファイル (最上部) --- */
+		:root body user-query-file-carousel {
+			align-self: flex-end !important;
+			width: auto !important;
+			max-width: 100% !important;
+			order: 0 !important;
+		}
 
-        /* ボタンのスタイル調整 */
-        :root body .gemini-user-actions > div {
-            margin: 0 !important;
-            padding: 0 !important;
-            display: flex !important;
-        }
-        :root body .gemini-user-actions button {
-            margin: 0 !important;
-            padding: 4px !important;
-            width: 32px !important;
-            height: 32px !important;
-        }
-        :root body .gemini-user-actions button mat-icon,
-        :root body .gemini-user-actions button span[class*="icon"] {
-            font-size: 18px !important;
-            width: 18px !important;
-            height: 18px !important;
-            line-height: 18px !important;
-        }
+		/* --- テキストバブル (2番目) --- */
+		:root body [class*="user-query-bubble"] {
+			display: block !important;
+			max-width: 85% !important;
+			margin-left: auto !important;
+			margin-right: 0 !important;
+			margin-bottom: 0 !important;
+			order: 1 !important;
+		}
 
-        /* --- モデル回答内のテーブル表示最適化 --- */
-        :root body .horizontal-scroll-wrapper,
-        :root body .table-block-component,
-        :root body table-block,
-        :root body .table-block,
-        :root body .table-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            display: block !important;
-        }
+		:root body [class*="user-query-bubble"] [class*="query-text-line"] {
+			background-color: transparent !important;
+		}
 
-        :root body model-response table,
-        :root body model-response table,
-        :root body [class*="model-response"] table,
-        :root body .model-response-text table {
-            width: 100% !important;
-            table-layout: auto !important;
-        }
+		/* --- ボタンエリア (JSで生成・最下部) --- */
+		:root body .gemini-user-actions {
+			display: inline-flex !important;
+			gap: 4px !important;
+			align-items: center !important;
+			justify-content: flex-end !important;
+			margin-right: 0 !important;
+			margin-top: 2px !important;
+			opacity: 0.8;
+			order: 2 !important; /* バブルの下 */
+		}
 
-        :root body model-response th,
-        :root body model-response td,
-        :root body [class*="model-response"] th,
-        :root body [class*="model-response"] td,
-        :root body .model-response-text th,
-        :root body .model-response-text td {
-            min-width: 150px !important;
-            word-break: normal !important;
-            vertical-align: top !important;
-        }
+		:root body .gemini-user-actions:hover {
+			opacity: 1;
+		}
 
-        :root body model-response [class*="table-wrapper"],
-        :root body [class*="model-response"] [class*="table-container"],
-        :root body .model-response-text [class*="table-wrapper"] {
-            overflow-x: auto !important;
-            max-width: 100% !important;
-        }
+		/* コンテナの隙間調整 */
+		:root body [class*="query-content"]:has([class*="user-query-bubble"]) {
+			display: flex !important;
+			flex-direction: column !important;
+			align-items: flex-end !important;
+			gap: 2px !important;
+			width: 100% !important;
+			min-width: 0 !important;
+		}
 
-        /* フッター */
-        :root body footer,
-        :root body [class*="bottom-container"] {
-             width: var(--gemini-chat-width) !important;
-             max-width: var(--gemini-chat-max-width) !important;
-             margin: 0 auto !important;
-        }
-        :root body [class*="input-area"],
-        :root body div[role="contentinfo"] > div {
-             width: 100% !important;
-             max-width: 100% !important;
-        }
-        :root body pre {
-            white-space: pre-wrap !important;
-        }
-    `;
+		/* ボタンのスタイル調整 */
+		:root body .gemini-user-actions > div {
+			margin: 0 !important;
+			padding: 0 !important;
+			display: flex !important;
+		}
+
+		:root body .gemini-user-actions button {
+			margin: 0 !important;
+			padding: 4px !important;
+			width: 32px !important;
+			height: 32px !important;
+		}
+
+		:root body .gemini-user-actions button mat-icon,
+		:root body .gemini-user-actions button span[class*="icon"] {
+			font-size: 18px !important;
+			width: 18px !important;
+			height: 18px !important;
+			line-height: 18px !important;
+		}
+
+		/* --- モデル回答内のテーブル表示最適化 --- */
+		:root body .horizontal-scroll-wrapper,
+		:root body .table-block-component,
+		:root body table-block,
+		:root body .table-block,
+		:root body .table-content {
+			width: 100% !important;
+			max-width: 100% !important;
+			display: block !important;
+		}
+
+		:root body model-response table,
+		:root body model-response table,
+		:root body [class*="model-response"] table,
+		:root body .model-response-text table {
+			width: 100% !important;
+			table-layout: auto !important;
+		}
+
+		:root body model-response th,
+		:root body model-response td,
+		:root body [class*="model-response"] th,
+		:root body [class*="model-response"] td,
+		:root body .model-response-text th,
+		:root body .model-response-text td {
+			min-width: 150px !important;
+			word-break: normal !important;
+			vertical-align: top !important;
+		}
+
+		:root body model-response [class*="table-wrapper"],
+		:root body [class*="model-response"] [class*="table-container"],
+		:root body .model-response-text [class*="table-wrapper"] {
+			overflow-x: auto !important;
+			max-width: 100% !important;
+		}
+
+		:root body pre {
+			white-space: pre-wrap !important;
+		}
+	`;
 
 	// --- 3. DOM操作 ---
 	const styleId = 'gemini-full-width-style';
