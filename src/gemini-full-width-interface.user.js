@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.4.0
+// @version      3.4.1
 // @description  GeminiのUIを最適化。編集モード時の入力欄を、全称セレクタを用いて強制的に最大化します。
 // @author       nsubaru11
 // @license      MIT
@@ -95,11 +95,9 @@
 		/* --- 編集モード --- */
 
 		/* 1. コンテナのFlex設定を「左寄せ・全幅」へ強制リセット */
-		:root body user-query:has(textarea),
-		:root body user-query-content:has(textarea),
-		:root body [class*="user-query-container"]:has(textarea),
-		:root body user-query:has(form),
-		:root body user-query-content:has(form) {
+		:root body user-query,
+		:root body user-query-content,
+		:root body [class*="user-query-container"] {
 			align-items: stretch !important; /* 幅いっぱいに伸ばす */
 			width: 100% !important;
 			max-width: 100% !important;
@@ -181,6 +179,8 @@
 			gap: 2px !important;
 			width: 100% !important;
 			min-width: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
 		}
 
 		/* ボタンのスタイル調整 */
