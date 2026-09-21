@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini Full-Width Interface
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      3.4.1
-// @description  GeminiのUIを最適化。編集モード時の入力欄を、全称セレクタを用いて強制的に最大化します。
+// @version      3.4.2
+// @description  Geminiのチャット画面と編集入力欄を全幅化し、変更された会話だけを処理して負荷を抑えます。
 // @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -103,19 +103,21 @@
 			max-width: 100% !important;
 		}
 
-		/* 2. フォーム内の「すべての要素」を強制的に幅100%にする */
-		:root body user-query form *,
-		:root body [class*="user-query-container"] form * {
+		/* 2. 入力欄とレイアウト用の要素だけを拡張（貼り付けた内容は対象外） */
+		:root body :is(user-query, [class*="user-query-container"]) form > *,
+		:root body :is(user-query, [class*="user-query-container"]) form :is(
+			mat-form-field, .mat-mdc-text-field-wrapper, .mat-mdc-form-field-flex,
+			.mat-mdc-form-field-infix, rich-textarea, textarea, [contenteditable="true"]
+		) {
 			width: 100% !important;
 			max-width: 100% !important;
 			box-sizing: border-box !important;
 		}
 
 		/* 3. ただし、アイコンやボタンなどの小さな要素がつぶれないように例外設定 */
-		:root body user-query form mat-icon,
-		:root body user-query form button,
-		:root body user-query form .mat-mdc-button-touch-target,
-		:root body user-query form .mat-mdc-focus-indicator {
+		:root body :is(user-query, [class*="user-query-container"]) form :is(
+			mat-icon, button, .mat-mdc-button-touch-target, .mat-mdc-focus-indicator
+		) {
 			width: auto !important;
 			max-width: none !important;
 		}
@@ -217,7 +219,6 @@
 		}
 
 		:root body model-response table,
-		:root body model-response table,
 		:root body [class*="model-response"] table,
 		:root body .model-response-text table {
 			width: 100% !important;
@@ -250,12 +251,16 @@
 	// --- 3. DOM操作 ---
 	const styleId = 'gemini-full-width-style';
 	const actionsClass = 'gemini-user-actions';
+	const pendingQueries = new Set();
+	// これらの内部更新はボタン配置に影響しない。大量のコードや入力内容を探索しない。
+	const ignoredMutationSelector = 'input-area-v2, .input-area, .input-area-container, '
+		+ 'model-response, .model-response-text, pre, code, textarea, [contenteditable], '
+		+ '[class*="user-query-bubble"], .gemini-user-actions';
 	let normalizePending = false;
 
-	function normalizeUserQueryActions() {
-		if (!document.body) return;
-
-		const queryContents = document.querySelectorAll('user-query-content [class*="query-content"]');
+	function normalizeUserQueryActions(query) {
+		if (!query.isConnected) return;
+		const queryContents = query.querySelectorAll('[class*="query-content"]');
 		queryContents.forEach((queryContent) => {
 			// 編集モード中は操作しない（安全策）
 			if (queryContent.querySelector('form') || queryContent.querySelector('textarea')) return;
@@ -296,13 +301,26 @@
 		});
 	}
 
-	function scheduleNormalize() {
+	function scheduleNormalize(query) {
+		pendingQueries.add(query);
 		if (normalizePending) return;
 		normalizePending = true;
 		requestAnimationFrame(() => {
 			normalizePending = false;
-			normalizeUserQueryActions();
+			const queries = Array.from(pendingQueries);
+			pendingQueries.clear();
+			queries.forEach(normalizeUserQueryActions);
 		});
+	}
+
+	function discoverQueries(root) {
+		if (root.nodeType !== 1) return;
+		if (root.matches('user-query-content')) {
+			scheduleNormalize(root);
+			return;
+		}
+		if (root.matches(ignoredMutationSelector)) return;
+		root.querySelectorAll('user-query-content').forEach(scheduleNormalize);
 	}
 
 	function injectStyle() {
@@ -316,12 +334,37 @@
 
 	// 初回実行
 	injectStyle();
-	scheduleNormalize();
+	discoverQueries(document.documentElement);
 
 	// 監視設定
-	const observer = new MutationObserver(() => {
+	const observer = new MutationObserver((records) => {
 		if (!document.getElementById(styleId)) injectStyle();
-		scheduleNormalize();
+		const discoveryRoots = new Set();
+		for (const record of records) {
+			const target = record.target;
+			if (target.nodeType !== 1 || target.closest(ignoredMutationSelector)) continue;
+			const query = target.closest('user-query-content');
+			if (query) {
+				// テキスト変更や、このスクリプト自身によるボタンの移動は無視する。
+				const changes = [...record.addedNodes, ...record.removedNodes];
+				if (changes.some((node) => node.nodeType === 1
+					&& !node.matches(`.${actionsClass}`)
+					&& !node.parentElement?.closest(`.${actionsClass}`))) {
+					scheduleNormalize(query);
+				}
+				continue;
+			}
+			for (const node of record.addedNodes) {
+				if (node.nodeType === 1) discoveryRoots.add(node);
+			}
+		}
+		// 同一バッチで追加された親子を重複して探索しない。
+		for (const root of discoveryRoots) {
+			if (!root.isConnected) continue;
+			let parent = root.parentElement;
+			while (parent && !discoveryRoots.has(parent)) parent = parent.parentElement;
+			if (!parent) discoverQueries(root);
+		}
 	});
 
 	observer.observe(document.documentElement, {childList: true, subtree: true});
@@ -357,5 +400,5 @@
 		}
 	});
 
-	console.log("Gemini Full-Width v3.3.0: Force full-width edit form.");
+	console.log("Gemini Full-Width v3.4.2: Incremental layout updates.");
 })();
