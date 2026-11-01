@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Paiza Language Selector
 // @namespace    https://github.com/nsubaru11/userscripts
-// @version      1.0.0
-// @description  paiza の提出ページで、あらかじめ設定した言語に自動切替します。
+// @version      1.0.1
+// @description  【更新終了】CP Toolkit へ統合しました。paiza の提出ページで、あらかじめ設定した言語に自動切替します。
 // @author       nsubaru11
 // @license      MIT
 // @homepageURL  https://github.com/nsubaru11/userscripts/tree/main
@@ -289,7 +289,38 @@
 		});
 	}
 
+	// 更新を終了したので、CP Toolkit へ設定を渡し、動いていれば本体を実行しない
+	function retire() {
+		const scriptId = 'PaizaLanguageSelector';
+		const installUrl = 'https://raw.githubusercontent.com/nsubaru11/competitive-programming-tools/main/userscripts/CpToolkit/dist/CpToolkit.user.js';
+		const noticeKey = `cp-toolkit:retired-notice:${scriptId}`;
+		const settings = {[STORAGE_KEY]: GM_getValue(STORAGE_KEY)};
+		localStorage.setItem(`cp-toolkit:legacy:${scriptId}`, JSON.stringify(settings));
+
+		if (document.documentElement.dataset.cpToolkit) return true;
+		if (!localStorage.getItem(noticeKey)) {
+			localStorage.setItem(noticeKey, '1');
+			const notice = document.createElement('div');
+			notice.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483000;max-width:360px;padding:12px;'
+				+ 'border:1px solid #999;border-radius:8px;background:#fff;color:#222;font-size:14px;';
+			const link = document.createElement('a');
+			link.href = installUrl;
+			link.target = '_blank';
+			link.rel = 'noopener';
+			link.textContent = 'CP Toolkit';
+			const close = document.createElement('button');
+			close.type = 'button';
+			close.textContent = '×';
+			close.style.cssText = 'float:right;border:0;background:none;cursor:pointer;';
+			close.addEventListener('click', () => notice.remove());
+			notice.append(close, `${scriptId} の更新は終了しました。機能は `, link, ' に統合されています。');
+			document.body.append(notice);
+		}
+		return false;
+	}
+
 	async function initialize() {
+		if (retire()) return;
 		registerMenuCommands();
 		await attemptLanguageSelection();
 
